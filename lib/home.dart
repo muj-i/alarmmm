@@ -14,7 +14,7 @@ class Home extends GetView<HomeController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ALARMMM...'),
+        title: const Text('A L A R M M M M M......'),
         toolbarHeight: 90,
         backgroundColor: Colors.red.shade50,
         actions: [
@@ -276,6 +276,7 @@ class Home extends GetView<HomeController> {
                       controller.alarmTone.value;
                   controller.alarmList[index].title =
                       controller.titleController.text.trim();
+                  controller.alarmList[index].isEnable = true;
                   controller.updateAlarmList(
                     purpose: 'time',
                     dateTime: dateTime,
