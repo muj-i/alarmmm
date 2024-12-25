@@ -14,7 +14,7 @@ abstract class LocalStorage {
       // Convert the list of AlarmModel to a list of maps (JSON)
       final jsonString = jsonEncode(times.map((e) => e.toJson()).toList());
       await _storage.write(key, jsonString);
-      // log("List of times saved to local storage: $times");
+      log("List of times saved to local storage: $times");
     } catch (e) {
       log("Error saving list of times to local storage: $e");
     }
@@ -37,5 +37,9 @@ abstract class LocalStorage {
       log("Error retrieving list of times from local storage: $e");
     }
     return null;
+  }
+
+  static clearStorage() {
+    _storage.erase();
   }
 }

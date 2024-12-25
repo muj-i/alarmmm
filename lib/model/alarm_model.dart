@@ -2,6 +2,7 @@ class AlarmModel {
   String title;
   String time;
   bool isEnable;
+  // bool isCompleted;
 
   AlarmModel({required this.title, required this.time, required this.isEnable});
 
@@ -11,6 +12,7 @@ class AlarmModel {
       'title': title,
       'time': time,
       'isEnable': isEnable,
+      // 'isCompleted': isCompleted,
     };
   }
 
@@ -20,6 +22,7 @@ class AlarmModel {
       title: json['title'],
       time: json['time'],
       isEnable: json['isEnable'],
+      // isCompleted: json['isCompleted'],
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:alarmmm/controller/home_controller.dart';
+import 'package:alarmmm/utils/local_storage.dart';
 import 'package:alarmmm/utils/toast.dart';
 import 'package:alarmmm/widgets/date_time_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -39,14 +40,14 @@ class Home extends GetView<HomeController> {
           }),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Obx(() {
-          return Column(
-            children: [
-              Visibility(
-                visible: controller.alarmList.isNotEmpty,
-                replacement: const Center(child: Text('No alarms in the list')),
-                child: ListView.builder(
+      body: Obx(() {
+        return Visibility(
+          visible: controller.alarmList.isNotEmpty,
+          replacement: const Center(child: Text('No alarms in the list')),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: controller.alarmList.length,
@@ -98,14 +99,15 @@ class Home extends GetView<HomeController> {
                               }
                               controller.alarmList[index].time =
                                   dateTime.toIso8601String();
-                              controller.updateAlarmList();
+                              controller.updateAlarmList(
+                                  purpose: 'time', dateTime: dateTime);
                             }
                           });
                         },
                         child: Ink(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                              color: Colors.deepOrange.shade50,
+                              color: Colors.red.shade50,
                               border: const Border(
                                 bottom:
                                     BorderSide(color: Colors.white, width: .5),
@@ -131,13 +133,15 @@ class Home extends GetView<HomeController> {
                                   ],
                                 ),
                                 CupertinoSwitch(
-                                    activeColor: Colors.red,
-                                    value: controller.alarmList[index].isEnable,
-                                    onChanged: (value) {
-                                      controller.alarmList[index].isEnable =
-                                          value;
-                                      controller.updateAlarmList();
-                                    }),
+                                  activeColor: Colors.red,
+                                  value: controller.alarmList[index].isEnable,
+                                  onChanged: (value) {
+                                    controller.alarmList[index].isEnable =
+                                        value;
+                                    controller.updateAlarmList(
+                                        purpose: 'switch');
+                                  },
+                                ),
                               ],
                             ),
                           ),
@@ -146,12 +150,12 @@ class Home extends GetView<HomeController> {
                     );
                   },
                 ),
-              ),
-              SizedBox(height: controller.isAlarmPlaying.value ? 120 : 60),
-            ],
-          );
-        }),
-      ),
+                SizedBox(height: controller.isAlarmPlaying.value ? 120 : 60),
+              ],
+            ),
+          ),
+        );
+      }),
       floatingActionButton: Obx(() {
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -208,12 +212,14 @@ class Home extends GetView<HomeController> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(problem),
+              Text(problem,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w500)),
               TextField(
                 controller: controller.answerController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
-                  hintText: 'Enter your answer',
+                  labelText: 'Enter your answer',
                 ),
               ),
             ],
@@ -259,6 +265,7 @@ class Home extends GetView<HomeController> {
             TextButton(
               onPressed: () {
                 controller.clearAlarmList();
+                LocalStorage.clearStorage();
                 Navigator.pop(context);
               },
               child: const Text('Delete'),

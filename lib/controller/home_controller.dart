@@ -51,7 +51,16 @@ class HomeController extends GetxController {
 
   addAlarm(DateTime dateTime) {
     alarmList.add(AlarmModel(
-        time: dateTime.toIso8601String(), title: 'Alarm', isEnable: true));
+      time: dateTime.toIso8601String(),
+      title: 'Alarm',
+      isEnable: true,
+    ));
+
+    final timeLeft = dateTime.difference(DateTime.now());
+    final hours = timeLeft.inHours;
+    final minutes = timeLeft.inMinutes.remainder(60);
+    final seconds = timeLeft.inSeconds.remainder(60);
+    Toast.show('Time left for the alarm: ${hours}h ${minutes}m ${seconds}s');
     sortArray();
   }
 
@@ -59,7 +68,11 @@ class HomeController extends GetxController {
     final times = await LocalStorage.getTimeListFromLocalStorage('alarm');
     if (times != null) {
       alarmList.assignAll(times
-          .map((e) => AlarmModel(time: e.time, title: 'Alarm', isEnable: true))
+          .map((e) => AlarmModel(
+                time: e.time,
+                title: e.title,
+                isEnable: e.isEnable,
+              ))
           .toList());
     }
   }
@@ -69,22 +82,29 @@ class HomeController extends GetxController {
     if (alarmList.isNotEmpty) {
       final now = DateTime.now();
 
-      // Find the alarms that match the current time (to the minute)
-      alarmList.removeWhere((alarmTime) {
-        final alarmDateTime = DateTime.tryParse(alarmTime.time);
-        if (alarmDateTime != null && _isTimeMatching(alarmDateTime, now)) {
-          if ((alarmTime.isEnable)) {
-            _playAlarm();
-            dev.log('Ringing alarm for the time: $alarmTime');
-          } else {
-            Toast.show(
-                'You have an alarm at ${formatTime(alarmTime.time)}, but it is disabled');
+      // Find the alarm that matches the current time (to the minute)
+      alarmList.firstWhere(
+        (alarmTime) {
+          final alarmDateTime = DateTime.tryParse(alarmTime.time);
+          if (alarmDateTime != null && _isTimeMatching(alarmDateTime, now)) {
+            if (alarmTime.isEnable) {
+              _playAlarm();
+              alarmTime.isEnable = false;
+              updateAlarmList(
+                  purpose: 'complete',
+                  dateTime: DateTime.tryParse(alarmTime.time));
+              dev.log('Ringing alarm for the time: $alarmTime');
+            }
+            return true;
           }
-
-          return true; // Remove the alarm after ringing
-        }
-        return false;
-      });
+          return false;
+        },
+        orElse: () => AlarmModel(
+          time: '',
+          title: 'No Alarm',
+          isEnable: false,
+        ),
+      );
 
       sortArray();
     }
@@ -118,13 +138,27 @@ class HomeController extends GetxController {
     return '${parsedDateTime?.day}/${parsedDateTime?.month}/${parsedDateTime?.year}';
   }
 
-  void updateAlarmList() {
+  void updateAlarmList({required String purpose, DateTime? dateTime}) {
     LocalStorage.setTimeListToLocalStorage(
         'alarm',
         alarmList
-            .map((e) =>
-                AlarmModel(time: e.time, title: 'Alarm', isEnable: e.isEnable))
+            .map((e) => AlarmModel(
+                  time: e.time,
+                  title: 'Alarm',
+                  isEnable: e.isEnable,
+                ))
             .toList());
+    if (purpose == 'time') {
+      final timeLeft = dateTime!.difference(DateTime.now());
+      final hours = timeLeft.inHours;
+      final minutes = timeLeft.inMinutes.remainder(60);
+      final seconds = timeLeft.inSeconds.remainder(60);
+      Toast.show('Time left for the alarm: ${hours}h ${minutes}m ${seconds}s');
+    } else if (purpose == 'switch') {
+      Toast.show('Alarm ${alarmList.last.isEnable ? 'enabled' : 'disabled'}');
+    } else {
+      dev.log('Unknown purpose: $purpose');
+    }
   }
 
   sortArray() {
@@ -133,20 +167,21 @@ class HomeController extends GetxController {
       final bTime = DateTime.tryParse(b.time);
       return aTime!.compareTo(bTime!);
     });
-    updateAlarmList();
+    updateAlarmList(purpose: 'sort');
   }
 
   RxString randomProblem = ''.obs;
   RxInt randomNum = 0.obs;
-  
+
   TextEditingController answerController = TextEditingController();
   genrateRandomProblems() {
-    randomNum.value = Random().nextInt(100);
+    randomNum.value = Random().nextInt(50);
     // Generate a random number
     for (int i = 0; i < 4; i++) {
       // Generate random solutions
       final solutions = solve(
-          List.generate(4, (index) => Random().nextInt(10) + 1), randomNum.value);
+          List.generate(4, (index) => Random().nextInt(10) + 1),
+          randomNum.value);
       dev.log('Random number: $randomNum');
       dev.log('Generated solutions: $solutions');
 
