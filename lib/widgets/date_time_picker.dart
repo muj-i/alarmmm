@@ -9,7 +9,7 @@ Future<DateTime?> showDateTimePicker(
   if (context.mounted) {
     return await showOmniDateTimePicker(
       context: context,
-      initialDate: currentDateTime ?? DateTime.now(),
+      initialDate: currentDateTime ?? DateTime.now().add(const Duration(minutes: 1)),
       firstDate: DateTime(1600).subtract(const Duration(days: 3652)),
       lastDate: DateTime.now().add(const Duration(days: 3652)),
       is24HourMode: false,

@@ -12,13 +12,15 @@ import 'package:solve_24_game/solve_24_game.dart';
 
 class HomeController extends GetxController {
   RxList<AlarmModel> alarmList = <AlarmModel>[].obs;
+  RxList alarmTones = [].obs;
+  RxString alarmTone = ''.obs;
   Timer? timer;
 
   RxBool isAlarmPlaying = false.obs;
   TextEditingController titleController = TextEditingController();
 
-  _playAlarm() {
-    playAudio(setVolume: 200.0);
+  _playAlarm(tone) {
+    playAudio(setVolume: 200.0, alarmTone: tone);
     isAlarmPlaying.value = true;
   }
 
@@ -41,6 +43,7 @@ class HomeController extends GetxController {
   void onInit() {
     getAlarmList();
     _startAlarmListener();
+    alarmTones.addAll([alarmClock, alarm, alarmEcho, alarmBang]);
     super.onInit();
   }
 
@@ -50,11 +53,13 @@ class HomeController extends GetxController {
   //   super.onClose();
   // }
 
-  addAlarm(DateTime dateTime) {
+  addAlarm(DateTime dateTime, String tone) {
     alarmList.add(AlarmModel(
       time: dateTime.toIso8601String(),
-      title: titleController.text.isEmpty ? 'Alarm' : titleController.text.trim(),
+      title:
+          titleController.text.isEmpty ? 'Alarm' : titleController.text.trim(),
       isEnable: true,
+      alarmTone: tone,
     ));
 
     final timeLeft = dateTime.difference(DateTime.now());
@@ -63,6 +68,7 @@ class HomeController extends GetxController {
     final seconds = timeLeft.inSeconds.remainder(60);
     Toast.show('Time left for the alarm: ${hours}h ${minutes}m ${seconds}s');
     sortArray();
+    updateAlarmList(purpose: 'time', dateTime: dateTime);
   }
 
   getAlarmList() async {
@@ -70,10 +76,10 @@ class HomeController extends GetxController {
     if (times != null) {
       alarmList.assignAll(times
           .map((e) => AlarmModel(
-                time: e.time,
-                title: e.title,
-                isEnable: e.isEnable,
-              ))
+              time: e.time,
+              title: e.title,
+              isEnable: e.isEnable,
+              alarmTone: e.alarmTone))
           .toList());
     }
   }
@@ -89,7 +95,7 @@ class HomeController extends GetxController {
           final alarmDateTime = DateTime.tryParse(alarmTime.time);
           if (alarmDateTime != null && _isTimeMatching(alarmDateTime, now)) {
             if (alarmTime.isEnable) {
-              _playAlarm();
+              _playAlarm(alarmTime.alarmTone);
               alarmTime.isEnable = false;
               updateAlarmList(
                   purpose: 'complete',
@@ -101,10 +107,10 @@ class HomeController extends GetxController {
           return false;
         },
         orElse: () => AlarmModel(
-          time: '',
-          title: 'No Alarm',
-          isEnable: false,
-        ),
+            time: '',
+            title: 'No Alarm',
+            isEnable: false,
+            alarmTone: alarmClock),
       );
 
       sortArray();
@@ -145,8 +151,9 @@ class HomeController extends GetxController {
         alarmList
             .map((e) => AlarmModel(
                   time: e.time,
-                  title: titleController.text.isEmpty ? e.title : titleController.text.trim(),
+                  title: e.title,
                   isEnable: e.isEnable,
+                  alarmTone: e.alarmTone,
                 ))
             .toList());
     if (purpose == 'time') {
@@ -168,7 +175,7 @@ class HomeController extends GetxController {
       final bTime = DateTime.tryParse(b.time);
       return aTime!.compareTo(bTime!);
     });
-    updateAlarmList(purpose: 'sort');
+    // updateAlarmList(purpose: 'sort');
   }
 
   RxString randomProblem = ''.obs;

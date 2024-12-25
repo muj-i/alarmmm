@@ -220,6 +220,11 @@ class Home extends GetView<HomeController> {
     return showDialog(
       context: context,
       builder: (context) {
+        if (forUpdate) {
+          controller.alarmTone.value = controller.alarmList[index!].alarmTone;
+        } else {
+          controller.alarmTone.value = controller.alarmTones[0];
+        }
         return AlertDialog(
           title: const Text('Alarm Info'),
           content: Column(
@@ -231,7 +236,23 @@ class Home extends GetView<HomeController> {
                 decoration: const InputDecoration(
                   labelText: 'Alarm Title',
                 ),
-              )
+              ),
+              const SizedBox(height: 8),
+              Obx(() {
+                return PopupMenuButton(
+                    itemBuilder: (context) {
+                      return controller.alarmTones
+                          .map((e) => PopupMenuItem(
+                                value: e,
+                                child: Text(e),
+                              ))
+                          .toList();
+                    },
+                    child: Text(controller.alarmTone.value),
+                    onSelected: (value) {
+                      controller.alarmTone.value = value.toString();
+                    });
+              }),
             ],
           ),
           actions: [
@@ -247,13 +268,20 @@ class Home extends GetView<HomeController> {
                 if (forUpdate) {
                   controller.alarmList[index!].time =
                       dateTime.toIso8601String();
+                  controller.alarmList[index].alarmTone =
+                      controller.alarmTone.value;
+                  controller.alarmList[index].title =
+                      controller.titleController.text.trim();
                   controller.updateAlarmList(
-                      purpose: 'time', dateTime: dateTime);
+                    purpose: 'time',
+                    dateTime: dateTime,
+                  );
                 } else {
-                  controller.addAlarm(dateTime);
+                  controller.addAlarm(dateTime, controller.alarmTone.value);
                 }
                 Navigator.pop(context);
                 controller.titleController.clear();
+                controller.alarmTone.value = '';
               },
               child: const Text('Save'),
             ),

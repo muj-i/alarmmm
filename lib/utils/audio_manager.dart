@@ -2,15 +2,18 @@ import 'package:audioplayers/audioplayers.dart';
 
 AudioPlayer audioPlayer = AudioPlayer();
 
-const loudAlarmSound = 'audios/loud_alarm_sound.mp3';
+const alarmClock = 'audios/alarm_clock.mp3';
+const alarm = 'audios/alarm.mp3';
+const alarmEcho = 'audios/alarm_echo.mp3';
+const alarmBang = 'audios/alarm_bang.mp3';
 
-playAudio({required double setVolume}) async {
+playAudio({required double setVolume, String? alarmTone}) async {
   if (!isPlaying()) {
-    audioPlayer.setSourceAsset(loudAlarmSound);
+    audioPlayer.setSourceAsset(alarmTone ?? alarmClock);
     audioPlayer.setVolume(setVolume);
-    audioPlayer.play(AssetSource(loudAlarmSound));
+    audioPlayer.play(AssetSource(alarmTone ?? alarmClock));
     audioPlayer.onPlayerComplete.listen((event) {
-      audioPlayer.play(AssetSource(loudAlarmSound));
+      audioPlayer.play(AssetSource(alarmTone ?? alarmClock));
     });
   }
 }
