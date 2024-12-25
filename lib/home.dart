@@ -171,62 +171,37 @@ class Home extends GetView<HomeController> {
                     );
                   },
                 ),
-                SizedBox(height: controller.isAlarmPlaying.value ? 120 : 60),
+                const SizedBox(height: 60),
               ],
             ),
           ),
         );
       }),
-      floatingActionButton: Obx(() {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FloatingActionButton(
-                child: const Icon(Icons.add_alarm),
-                onPressed: () async {
-                  final DateTime? dateTime = await showDateTimePicker(context);
+      floatingActionButton: FloatingActionButton(
+          child: const Icon(Icons.add_alarm),
+          onPressed: () async {
+            final DateTime? dateTime = await showDateTimePicker(context);
 
-                  if (dateTime != null) {
-                    if (dateTime.minute == DateTime.now().minute &&
-                        dateTime.hour == DateTime.now().hour) {
-                      Toast.show('Cannot set alarm for the current time');
-                      return;
-                    }
-                    if (controller.alarmList.any((element) {
-                      final DateTime elementTime = DateTime.parse(element.time);
-                      return elementTime.day == dateTime.day &&
-                          elementTime.hour == dateTime.hour &&
-                          elementTime.minute == dateTime.minute;
-                    })) {
-                      Toast.show('Alarm already exists for this time');
-                      return;
-                    }
-                    if (context.mounted) {
-                      showAlarmOtherInfoDialog(context, dateTime: dateTime);
-                    }
-                  }
-                }),
-            Visibility(
-              visible: controller.isAlarmPlaying.value,
-              child: const SizedBox(height: 8),
-            ),
-            Visibility(
-              visible: controller.isAlarmPlaying.value,
-              child: FloatingActionButton(
-                child: const Icon(Icons.stop),
-                onPressed: () {
-                  controller.genrateRandomProblems();
-                  showProblemDialog(context, controller.randomProblem.value);
-                },
-              ),
-            ),
-            // FloatingActionButton(onPressed: () {
-            //   showAlarmOtherInfoDialog(context,
-            //       dateTime: DateTime.parse('2022-01-01T00:00:00'));
-            // })
-          ],
-        );
-      }),
+            if (dateTime != null) {
+              if (dateTime.minute == DateTime.now().minute &&
+                  dateTime.hour == DateTime.now().hour) {
+                Toast.show('Cannot set alarm for the current time');
+                return;
+              }
+              if (controller.alarmList.any((element) {
+                final DateTime elementTime = DateTime.parse(element.time);
+                return elementTime.day == dateTime.day &&
+                    elementTime.hour == dateTime.hour &&
+                    elementTime.minute == dateTime.minute;
+              })) {
+                Toast.show('Alarm already exists for this time');
+                return;
+              }
+              if (context.mounted) {
+                showAlarmOtherInfoDialog(context, dateTime: dateTime);
+              }
+            }
+          }),
     );
   }
 
@@ -313,51 +288,6 @@ class Home extends GetView<HomeController> {
                 controller.alarmTone.value = '';
               },
               child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  showProblemDialog(BuildContext context, String problem) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Solve the problem'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(problem,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w500)),
-              TextField(
-                controller: controller.answerController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Enter your answer',
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Close'),
-            ),
-            TextButton(
-              onPressed: () {
-                final isCorrect = controller.checkAnswer();
-                if (isCorrect) {
-                  controller.stopAlarm();
-                  Navigator.pop(context);
-                  controller.answerController.clear();
-                }
-              },
-              child: const Text('Check'),
             ),
           ],
         );

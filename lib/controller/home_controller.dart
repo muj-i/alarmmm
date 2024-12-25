@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer' as dev;
 import 'dart:math';
 
+import 'package:alarmmm/alarm_ringing_screen.dart';
 import 'package:alarmmm/model/alarm_model.dart';
 import 'package:alarmmm/utils/audio_manager.dart';
 import 'package:alarmmm/utils/local_storage.dart';
@@ -16,17 +17,14 @@ class HomeController extends GetxController {
   RxString alarmTone = ''.obs;
   Timer? timer;
 
-  RxBool isAlarmPlaying = false.obs;
   TextEditingController titleController = TextEditingController();
 
   _playAlarm(tone) {
     playAudio(setVolume: 200.0, alarmTone: tone);
-    isAlarmPlaying.value = true;
   }
 
   stopAlarm() {
     stopAudio();
-    isAlarmPlaying.value = false;
   }
 
   clearAlarmList() {
@@ -96,6 +94,7 @@ class HomeController extends GetxController {
           if (alarmDateTime != null && _isTimeMatching(alarmDateTime, now)) {
             if (alarmTime.isEnable) {
               _playAlarm(alarmTime.alarmTone);
+              Get.offAll(() => AlarmRingingScreen(alarmTime));
               alarmTime.isEnable = false;
               updateAlarmList(
                   purpose: 'complete',
