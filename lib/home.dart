@@ -210,6 +210,7 @@ class Home extends GetView<HomeController> {
       {required DateTime dateTime, bool forUpdate = false, int? index}) {
     return showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
         if (forUpdate) {
           controller.alarmTone.value = controller.alarmList[index!].alarmTone;
@@ -264,10 +265,10 @@ class Home extends GetView<HomeController> {
           actions: [
             TextButton(
               onPressed: () {
+                Navigator.pop(context);
                 controller.titleController.clear();
                 controller.alarmTone.value = '';
                 stopAudio();
-                Navigator.pop(context);
               },
               child: const Text('Close'),
             ),
