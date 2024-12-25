@@ -15,6 +15,7 @@ class HomeController extends GetxController {
   Timer? timer;
 
   RxBool isAlarmPlaying = false.obs;
+  TextEditingController titleController = TextEditingController();
 
   _playAlarm() {
     playAudio(setVolume: 200.0);
@@ -52,7 +53,7 @@ class HomeController extends GetxController {
   addAlarm(DateTime dateTime) {
     alarmList.add(AlarmModel(
       time: dateTime.toIso8601String(),
-      title: 'Alarm',
+      title: titleController.text.isEmpty ? 'Alarm' : titleController.text.trim(),
       isEnable: true,
     ));
 
@@ -144,7 +145,7 @@ class HomeController extends GetxController {
         alarmList
             .map((e) => AlarmModel(
                   time: e.time,
-                  title: 'Alarm',
+                  title: titleController.text.isEmpty ? e.title : titleController.text.trim(),
                   isEnable: e.isEnable,
                 ))
             .toList());

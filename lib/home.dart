@@ -97,10 +97,16 @@ class Home extends GetView<HomeController> {
                                     'Alarm already exists for this time');
                                 return;
                               }
-                              controller.alarmList[index].time =
-                                  dateTime.toIso8601String();
-                              controller.updateAlarmList(
-                                  purpose: 'time', dateTime: dateTime);
+                              if (context.mounted) {
+                                controller.titleController.text =
+                                    controller.alarmList[index].title;
+                                showAlarmOtherInfoDialog(
+                                  context,
+                                  dateTime: dateTime,
+                                  forUpdate: true,
+                                  index: index,
+                                );
+                              }
                             }
                           });
                         },
@@ -120,6 +126,10 @@ class Home extends GetView<HomeController> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    Text(
+                                      controller.alarmList[index].title,
+                                      style: const TextStyle(fontSize: 18),
+                                    ),
                                     Text(
                                       controller.formatTime(
                                           controller.alarmList[index].time),
@@ -180,7 +190,9 @@ class Home extends GetView<HomeController> {
                       Toast.show('Alarm already exists for this time');
                       return;
                     }
-                    controller.addAlarm(dateTime);
+                    if (context.mounted) {
+                      showAlarmOtherInfoDialog(context, dateTime: dateTime);
+                    }
                   }
                 }),
             Visibility(
@@ -200,6 +212,54 @@ class Home extends GetView<HomeController> {
           ],
         );
       }),
+    );
+  }
+
+  showAlarmOtherInfoDialog(context,
+      {required DateTime dateTime, bool forUpdate = false, int? index}) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Alarm Info'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: controller.titleController,
+                textInputAction: TextInputAction.done,
+                decoration: const InputDecoration(
+                  labelText: 'Alarm Title',
+                ),
+              )
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                controller.titleController.clear();
+                Navigator.pop(context);
+              },
+              child: const Text('Close'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (forUpdate) {
+                  controller.alarmList[index!].time =
+                      dateTime.toIso8601String();
+                  controller.updateAlarmList(
+                      purpose: 'time', dateTime: dateTime);
+                } else {
+                  controller.addAlarm(dateTime);
+                }
+                Navigator.pop(context);
+                controller.titleController.clear();
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
     );
   }
 
