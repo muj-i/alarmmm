@@ -1,4 +1,5 @@
 import 'package:alarmmm/controller/home_controller.dart';
+import 'package:alarmmm/utils/audio_manager.dart';
 import 'package:alarmmm/utils/local_storage.dart';
 import 'package:alarmmm/utils/toast.dart';
 import 'package:alarmmm/widgets/date_time_picker.dart';
@@ -255,6 +256,7 @@ class Home extends GetView<HomeController> {
                     ),
                     onSelected: (value) {
                       controller.alarmTone.value = value.toString();
+                      playAudioOnce(alarmTone: value.toString());
                     });
               }),
             ],
@@ -263,6 +265,8 @@ class Home extends GetView<HomeController> {
             TextButton(
               onPressed: () {
                 controller.titleController.clear();
+                controller.alarmTone.value = '';
+                stopAudio();
                 Navigator.pop(context);
               },
               child: const Text('Close'),
@@ -284,6 +288,7 @@ class Home extends GetView<HomeController> {
                 } else {
                   controller.addAlarm(dateTime, controller.alarmTone.value);
                 }
+                stopAudio();
                 Navigator.pop(context);
                 controller.titleController.clear();
                 controller.alarmTone.value = '';

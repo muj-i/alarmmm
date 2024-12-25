@@ -18,6 +18,13 @@ playAudio({required double setVolume, String? alarmTone}) async {
   }
 }
 
+playAudioOnce({required String alarmTone}) async {
+  stopAudio();
+  audioPlayer.setSourceAsset(alarmTone);
+  audioPlayer.setVolume(200.0);
+  audioPlayer.play(AssetSource(alarmTone));
+}
+
 stopAudio() async {
   audioPlayer.state = PlayerState.stopped;
   audioPlayer.stop();
