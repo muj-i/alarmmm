@@ -93,9 +93,8 @@ class Home extends GetView<HomeController> {
                                     elementTime.hour == dateTime.hour &&
                                     elementTime.minute == dateTime.minute;
                               })) {
-                                Toast.show(
-                                    'Alarm already exists for this time');
-                                return;
+                                controller.alarmList[index].time =
+                                    dateTime.toIso8601String();
                               }
                               if (context.mounted) {
                                 controller.titleController.text =
@@ -135,10 +134,22 @@ class Home extends GetView<HomeController> {
                                           controller.alarmList[index].time),
                                       style: const TextStyle(fontSize: 20),
                                     ),
-                                    Text(
-                                      controller.formatDate(
-                                          controller.alarmList[index].time),
-                                      style: const TextStyle(fontSize: 16),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          controller.formatDate(
+                                              controller.alarmList[index].time),
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Icon(Icons.music_note_rounded,
+                                            size: 20),
+                                        Text(
+                                            controller.getAudioTitle(controller
+                                                .alarmList[index].alarmTone),
+                                            style:
+                                                const TextStyle(fontSize: 16)),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -209,6 +220,10 @@ class Home extends GetView<HomeController> {
                 },
               ),
             ),
+            // FloatingActionButton(onPressed: () {
+            //   showAlarmOtherInfoDialog(context,
+            //       dateTime: DateTime.parse('2022-01-01T00:00:00'));
+            // })
           ],
         );
       }),
@@ -228,6 +243,7 @@ class Home extends GetView<HomeController> {
         return AlertDialog(
           title: const Text('Alarm Info'),
           content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
@@ -244,11 +260,24 @@ class Home extends GetView<HomeController> {
                       return controller.alarmTones
                           .map((e) => PopupMenuItem(
                                 value: e,
-                                child: Text(e),
+                                child: Text(controller.getAudioTitle(e)),
                               ))
                           .toList();
                     },
-                    child: Text(controller.alarmTone.value),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        children: [
+                          const Text('Alarm Tone:',
+                              style: TextStyle(fontSize: 16)),
+                          const Icon(Icons.music_note_rounded, size: 20),
+                          Text(
+                              controller
+                                  .getAudioTitle(controller.alarmTone.value),
+                              style: const TextStyle(fontSize: 16)),
+                        ],
+                      ),
+                    ),
                     onSelected: (value) {
                       controller.alarmTone.value = value.toString();
                     });

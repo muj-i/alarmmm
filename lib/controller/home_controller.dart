@@ -218,4 +218,19 @@ class HomeController extends GetxController {
     }
     return false;
   }
+
+  getAudioTitle(String tone) {
+    switch (tone) {
+      case alarmClock:
+        return 'Alarm Clock';
+      case alarm:
+        return 'Alarm';
+      case alarmEcho:
+        return 'Alarm Echo';
+      case alarmBang:
+        return 'Alarm Bang';
+      default:
+        return 'Unknown';
+    }
+  }
 }
