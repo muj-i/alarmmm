@@ -14,9 +14,9 @@ class App extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
         useMaterial3: true,
       ),
-      initialBinding: BindingsBuilder(() {
-        Get.lazyPut(() => HomeController());
-      }),
+      // initialBinding: BindingsBuilder(() {
+      //   Get.lazyPut(() => HomeController());
+      // }),
       home: const Home(),
     );
   }

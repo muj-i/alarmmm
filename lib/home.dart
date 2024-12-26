@@ -1,4 +1,5 @@
 import 'package:alarmmm/controller/home_controller.dart';
+import 'package:alarmmm/main.dart';
 import 'package:alarmmm/utils/audio_manager.dart';
 import 'package:alarmmm/utils/local_storage.dart';
 import 'package:alarmmm/utils/toast.dart';
@@ -7,12 +8,20 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:local_notification/local_notification.dart';
 
-class Home extends GetView<HomeController> {
+class Home extends StatelessWidget {
   const Home({super.key});
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      onInit();
+      await LocalNotification.permission('A L A R M M M M M.....')
+          .then((_) async {
+        if (context.mounted) await initializeService();
+      });
+    });
     return Scaffold(
       appBar: AppBar(
         title: const Text('A L A R M M M M M......'),
@@ -21,7 +30,7 @@ class Home extends GetView<HomeController> {
         actions: [
           Obx(() {
             return Visibility(
-              visible: controller.alarmList.isNotEmpty,
+              visible: alarmList.isNotEmpty,
               replacement: const SizedBox(),
               child: Container(
                 height: 40,
@@ -39,11 +48,19 @@ class Home extends GetView<HomeController> {
               ),
             );
           }),
+          IconButton(
+              onPressed: () async {
+                await LocalNotification.permission('A L A R M M M M M.....')
+                    .then((_) async {
+                  if (context.mounted) await initializeService();
+                });
+              },
+              icon: const Icon(Icons.notifications_active)),
         ],
       ),
       body: Obx(() {
         return Visibility(
-          visible: controller.alarmList.isNotEmpty,
+          visible: alarmList.isNotEmpty,
           replacement: const Center(child: Text('No alarms in the list')),
           child: SingleChildScrollView(
             child: Column(
@@ -51,19 +68,18 @@ class Home extends GetView<HomeController> {
                 ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: controller.alarmList.length,
+                  itemCount: alarmList.length,
                   itemBuilder: (context, index) {
                     return Slidable(
                       key: const ValueKey(0),
                       endActionPane: ActionPane(
                         motion: const ScrollMotion(),
                         dismissible: DismissiblePane(onDismissed: () {
-                          controller.deleteIndividualAlarm(index);
+                          deleteIndividualAlarm(index);
                         }),
                         children: [
                           SlidableAction(
-                            onPressed: (_) =>
-                                controller.deleteIndividualAlarm(index),
+                            onPressed: (_) => deleteIndividualAlarm(index),
                             backgroundColor: Colors.red,
                             foregroundColor: Colors.white,
                             padding: EdgeInsets.zero,
@@ -77,8 +93,8 @@ class Home extends GetView<HomeController> {
                             WidgetStateProperty.all(Colors.red.shade100),
                         onTap: () {
                           showDateTimePicker(context,
-                                  currentDateTime: DateTime.parse(
-                                      controller.alarmList[index].time))
+                                  currentDateTime:
+                                      DateTime.parse(alarmList[index].time))
                               .then((dateTime) {
                             if (dateTime != null) {
                               if (dateTime.minute == DateTime.now().minute &&
@@ -87,19 +103,18 @@ class Home extends GetView<HomeController> {
                                     'Cannot set alarm for the current time');
                                 return;
                               }
-                              if (controller.alarmList.any((element) {
+                              if (alarmList.any((element) {
                                 final DateTime elementTime =
                                     DateTime.parse(element.time);
                                 return elementTime.day == dateTime.day &&
                                     elementTime.hour == dateTime.hour &&
                                     elementTime.minute == dateTime.minute;
                               })) {
-                                controller.alarmList[index].time =
+                                alarmList[index].time =
                                     dateTime.toIso8601String();
                               }
                               if (context.mounted) {
-                                controller.titleController.text =
-                                    controller.alarmList[index].title;
+                                titleController.text = alarmList[index].title;
                                 showAlarmOtherInfoDialog(
                                   context,
                                   dateTime: dateTime,
@@ -127,27 +142,25 @@ class Home extends GetView<HomeController> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      controller.alarmList[index].title,
+                                      alarmList[index].title,
                                       style: const TextStyle(fontSize: 18),
                                     ),
                                     Text(
-                                      controller.formatTime(
-                                          controller.alarmList[index].time),
+                                      formatTime(alarmList[index].time),
                                       style: const TextStyle(fontSize: 20),
                                     ),
                                     Row(
                                       children: [
                                         Text(
-                                          controller.formatDate(
-                                              controller.alarmList[index].time),
+                                          formatDate(alarmList[index].time),
                                           style: const TextStyle(fontSize: 16),
                                         ),
                                         const SizedBox(width: 8),
                                         const Icon(Icons.music_note_rounded,
                                             size: 20),
                                         Text(
-                                            controller.getAudioTitle(controller
-                                                .alarmList[index].alarmTone),
+                                            getAudioTitle(
+                                                alarmList[index].alarmTone),
                                             style:
                                                 const TextStyle(fontSize: 16)),
                                       ],
@@ -156,12 +169,10 @@ class Home extends GetView<HomeController> {
                                 ),
                                 CupertinoSwitch(
                                   activeColor: Colors.red,
-                                  value: controller.alarmList[index].isEnable,
+                                  value: alarmList[index].isEnable,
                                   onChanged: (value) {
-                                    controller.alarmList[index].isEnable =
-                                        value;
-                                    controller.updateAlarmList(
-                                        purpose: 'switch');
+                                    alarmList[index].isEnable = value;
+                                    updateAlarmList(purpose: 'switch');
                                   },
                                 ),
                               ],
@@ -189,7 +200,7 @@ class Home extends GetView<HomeController> {
                 Toast.show('Cannot set alarm for the current time');
                 return;
               }
-              if (controller.alarmList.any((element) {
+              if (alarmList.any((element) {
                 final DateTime elementTime = DateTime.parse(element.time);
                 return elementTime.day == dateTime.day &&
                     elementTime.hour == dateTime.hour &&
@@ -213,9 +224,9 @@ class Home extends GetView<HomeController> {
       barrierDismissible: false,
       builder: (context) {
         if (forUpdate) {
-          controller.alarmTone.value = controller.alarmList[index!].alarmTone;
+          alarmTone.value = alarmList[index!].alarmTone;
         } else {
-          controller.alarmTone.value = controller.alarmTones[0];
+          alarmTone.value = alarmTones[0];
         }
         return AlertDialog(
           title: const Text('Alarm Info'),
@@ -224,7 +235,7 @@ class Home extends GetView<HomeController> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                controller: controller.titleController,
+                controller: titleController,
                 textInputAction: TextInputAction.done,
                 decoration: const InputDecoration(
                   labelText: 'Alarm Title',
@@ -234,10 +245,10 @@ class Home extends GetView<HomeController> {
               Obx(() {
                 return PopupMenuButton(
                     itemBuilder: (context) {
-                      return controller.alarmTones
+                      return alarmTones
                           .map((e) => PopupMenuItem(
                                 value: e,
-                                child: Text(controller.getAudioTitle(e)),
+                                child: Text(getAudioTitle(e)),
                               ))
                           .toList();
                     },
@@ -248,15 +259,13 @@ class Home extends GetView<HomeController> {
                           const Text('Alarm Tone:',
                               style: TextStyle(fontSize: 16)),
                           const Icon(Icons.music_note_rounded, size: 20),
-                          Text(
-                              controller
-                                  .getAudioTitle(controller.alarmTone.value),
+                          Text(getAudioTitle(alarmTone.value),
                               style: const TextStyle(fontSize: 16)),
                         ],
                       ),
                     ),
                     onSelected: (value) {
-                      controller.alarmTone.value = value.toString();
+                      alarmTone.value = value.toString();
                       playAudioOnce(alarmTone: value.toString());
                     });
               }),
@@ -266,8 +275,8 @@ class Home extends GetView<HomeController> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                controller.titleController.clear();
-                controller.alarmTone.value = '';
+                titleController.clear();
+                alarmTone.value = '';
                 stopAudio();
               },
               child: const Text('Close'),
@@ -275,24 +284,21 @@ class Home extends GetView<HomeController> {
             TextButton(
               onPressed: () {
                 if (forUpdate) {
-                  controller.alarmList[index!].time =
-                      dateTime.toIso8601String();
-                  controller.alarmList[index].alarmTone =
-                      controller.alarmTone.value;
-                  controller.alarmList[index].title =
-                      controller.titleController.text.trim();
-                  controller.alarmList[index].isEnable = true;
-                  controller.updateAlarmList(
+                  alarmList[index!].time = dateTime.toIso8601String();
+                  alarmList[index].alarmTone = alarmTone.value;
+                  alarmList[index].title = titleController.text.trim();
+                  alarmList[index].isEnable = true;
+                  updateAlarmList(
                     purpose: 'time',
                     dateTime: dateTime,
                   );
                 } else {
-                  controller.addAlarm(dateTime, controller.alarmTone.value);
+                  addAlarm(dateTime, alarmTone.value);
                 }
                 stopAudio();
                 Navigator.pop(context);
-                controller.titleController.clear();
-                controller.alarmTone.value = '';
+                titleController.clear();
+                alarmTone.value = '';
               },
               child: const Text('Save'),
             ),
@@ -318,7 +324,7 @@ class Home extends GetView<HomeController> {
             ),
             TextButton(
               onPressed: () {
-                controller.clearAlarmList();
+                clearAlarmList();
                 LocalStorage.clearStorage();
                 Navigator.pop(context);
               },

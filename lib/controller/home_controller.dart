@@ -9,9 +9,12 @@ import 'package:alarmmm/utils/local_storage.dart';
 import 'package:alarmmm/utils/toast.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:local_notification/local_notification.dart';
 import 'package:solve_24_game/solve_24_game.dart';
 
-class HomeController extends GetxController {
+// class HomeController extends GetxController {
+//   static HomeController get to => Get.put(HomeController());
+
   RxList<AlarmModel> alarmList = <AlarmModel>[].obs;
   RxList alarmTones = [].obs;
   RxString alarmTone = ''.obs;
@@ -37,12 +40,12 @@ class HomeController extends GetxController {
     sortArray();
   }
 
-  @override
+  // @override
   void onInit() {
     getAlarmList();
-    _startAlarmListener();
+    startAlarmListener();
     alarmTones.addAll([alarmClock, alarm, alarmEcho, alarmBang]);
-    super.onInit();
+    // super.onInit();
   }
 
   // @override
@@ -94,6 +97,8 @@ class HomeController extends GetxController {
           if (alarmDateTime != null && _isTimeMatching(alarmDateTime, now)) {
             if (alarmTime.isEnable) {
               _playAlarm(alarmTime.alarmTone);
+              LocalNotification.showLocalNotification(Random().nextInt(1000),
+                  alarmTime.title, formatTime(alarmTime.time));
               Get.offAll(() => AlarmRingingScreen(alarmTime));
               alarmTime.isEnable = false;
               updateAlarmList(
@@ -124,7 +129,7 @@ class HomeController extends GetxController {
         alarmTime.minute == now.minute;
   }
 
-  void _startAlarmListener() {
+  void startAlarmListener() {
     timer = Timer.periodic(const Duration(seconds: 1), (_) {
       _checkAlarms(); // Check for alarms every second
     });
@@ -232,4 +237,4 @@ class HomeController extends GetxController {
         return 'Unknown';
     }
   }
-}
+// }

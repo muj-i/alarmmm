@@ -4,7 +4,7 @@ import 'package:alarmmm/model/alarm_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class AlarmRingingScreen extends GetView<HomeController> {
+class AlarmRingingScreen extends StatelessWidget {
   const AlarmRingingScreen(this.alarmTime, {super.key});
   final AlarmModel alarmTime;
   @override
@@ -31,14 +31,14 @@ class AlarmRingingScreen extends GetView<HomeController> {
                   style: const TextStyle(fontSize: 20),
                 ),
                 Text(
-                  controller.formatTime(alarmTime.time),
-                  style:
-                      const TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
+                  formatTime(alarmTime.time),
+                  style: const TextStyle(
+                      fontSize: 28, fontWeight: FontWeight.w600),
                 ),
                 Text(
-                  controller.formatDate(alarmTime.time),
-                  style:
-                      const TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+                  formatDate(alarmTime.time),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w400),
                 ),
                 const SizedBox(height: 20),
                 Padding(
@@ -52,8 +52,8 @@ class AlarmRingingScreen extends GetView<HomeController> {
                       Text('Stop Alarm'),
                     ]),
                     onPressed: () {
-                      controller.genrateRandomProblems();
-                      showProblemDialog(context, controller.randomProblem.value);
+                      genrateRandomProblems();
+                      showProblemDialog(context, randomProblem.value);
                     },
                   ),
                 ),
@@ -78,7 +78,7 @@ class AlarmRingingScreen extends GetView<HomeController> {
                   style: const TextStyle(
                       fontSize: 16, fontWeight: FontWeight.w500)),
               TextField(
-                controller: controller.answerController,
+                controller: answerController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   labelText: 'Enter your answer',
@@ -95,12 +95,12 @@ class AlarmRingingScreen extends GetView<HomeController> {
             ),
             TextButton(
               onPressed: () {
-                final isCorrect = controller.checkAnswer();
+                final isCorrect = checkAnswer();
                 if (isCorrect) {
-                  controller.stopAlarm();
+                  stopAlarm();
                   Navigator.pop(context);
                   Get.offAll(() => const Home());
-                  controller.answerController.clear();
+                  answerController.clear();
                 }
               },
               child: const Text('Check'),
